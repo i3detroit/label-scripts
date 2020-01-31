@@ -1,4 +1,5 @@
-from xml.etree import ElementTree as tree
+#from xml.etree import ElementTree as tree
+import lxml.etree as tree
 import qrcode, json, os
 
 DEF_TOTAL_WIDTH = 1000   # Width of the sticker (in pixels)
@@ -42,38 +43,38 @@ class Sticker:
     # Zone label and actual zone name, splits on spaces if name is too long, works for all zone names as of Jan 26, 2020
     def addZone(self, zoneName):
         #TODO: Check length of zone name and split into multiple lines if required
-        zoneText = tree.Element('text', x='80%', y='62%',  fill='black', 
+        zoneText = tree.Element('text', x=self.convert('X', 0.8), y=self.convert('Y', 0.62),  fill='black', 
             style='font-family:Arial;font-size:'+str(self.bigFontSize)+'px;font-weight:bold;text-anchor:middle;')
         zoneText.text = 'Zone:'
         self.dwg.append(zoneText)
         if len(zoneName) <= 16:
-            zoneText = tree.Element('text', x='80%', y='69%',  fill='black', 
+            zoneText = tree.Element('text', x=self.convert('X', 0.8), y=self.convert('Y', 0.69),  fill='black', 
                 style='font-family:Arial;font-size:'+str(self.mediumFontSize)+'px;text-anchor:middle;dominant-baseline:top')
             zoneText.text = zoneName
             self.dwg.append(zoneText)
         else:
             splitIndex = getClosestChar(zoneName, ' ', 16)
-            zoneText = tree.Element('text', x='80%', y='69%',  fill='black', 
+            zoneText = tree.Element('text', x=self.convert('X', 0.8), y=self.convert('Y', 0.69),  fill='black', 
                 style='font-family:Arial;font-size:'+str(self.mediumFontSize)+'px;text-anchor:middle;dominant-baseline:top')
             zoneText.text = zoneName[0:splitIndex]
             self.dwg.append(zoneText)
-            zoneText = tree.Element('text', x='80%', y='76%',  fill='black', 
+            zoneText = tree.Element('text', x=self.convert('X', 0.8), y=self.convert('Y', 0.76),  fill='black', 
                 style='font-family:Arial;font-size:'+str(self.mediumFontSize)+'px;text-anchor:middle;dominant-baseline:top')
             zoneText.text = zoneName[splitIndex+1:]
             self.dwg.append(zoneText)
 
     # Draw a box, add a label, and indicate whether authorization is required or not
     def addAuth(self, authRequired):
-        authRect = tree.Element('rect', x='65%', y='25%', rx=str(self.curveRadius), width='30%', height='25%',
+        authRect = tree.Element('rect', x=self.convert('X', 0.65), y=self.convert('Y', 0.25), rx=str(self.curveRadius), width=self.convert('X', 0.3), height=self.convert('Y', 0.25),
             fill='none', stroke='black')
         self.dwg.append(authRect)
 
-        authText = tree.Element('text', x='80%', y='35%',  fill='black', 
+        authText = tree.Element('text', x=self.convert('X', 0.8), y=self.convert('Y', 0.35),  fill='black', 
             style='font-family:Arial;font-size:'+str(self.bigFontSize)+'px;text-anchor:middle;dominant-baseline:top')
         authText.text = 'Authorization'
         self.dwg.append(authText)
 
-        authText = tree.Element('text', x='80%', y='42%',  fill='black', 
+        authText = tree.Element('text', x=self.convert('X', 0.8), y=self.convert('Y', 0.42),  fill='black', 
             style='font-family:Arial;font-size:'+str(self.bigFontSize)+'px;text-anchor:middle;font-weight:bold')
         if authRequired:
             authText.text = 'Required'
@@ -89,25 +90,25 @@ class Sticker:
         img = qrObject.make_image()
         #img.save(fName+'_QR.png')
         img.save(os.path.join('Images', 'QR', fName+'_QR.png'))
-        qrCode = tree.Element('image', x='2%', y='19%', width='40%', height='66%',
-                href=os.path.join('Images', 'QR', fName+'_QR.png'))
+        qrCode = tree.Element('image', x=self.convert('X', 0.02), y=self.convert('Y', 0.19), width=self.convert('X', 0.4), height=self.convert('Y', 0.66))
+        qrCode.set("{http://www.w3.org/1999/xlink}href", os.path.join('Images', 'QR', fName+'_QR.png'))
         self.dwg.append(qrCode)
 
     # Tool name in big print, bolded and centered
     def addToolName(self, toolName):
         if len(toolName) <= 30:
-            toolNameText = tree.Element('text', x='50%', y='14%',  fill='black', 
+            toolNameText = tree.Element('text', x=self.convert('X', 0.5), y=self.convert('Y', 0.14),  fill='black', 
                 style='font-family:Arial;font-size:'+str(self.hugeFontSize)+'px;font-weight:bold;text-anchor:middle;')
             toolNameText.text = toolName
             self.dwg.append(toolNameText)
         else:
             splitIndex = getClosestChar(toolName, ' ', 30)
-            toolNameText = tree.Element('text', x='50%', y='10%',  fill='black', 
+            toolNameText = tree.Element('text', x=self.convert('X', 0.5), y=self.convert('Y', 0.1),  fill='black', 
                 style='font-family:Arial;font-size:'+str(self.hugeFontSize)+'px;font-weight:bold;text-anchor:middle;')
             toolNameText.text = toolName[0:splitIndex]
             self.dwg.append(toolNameText)
 
-            toolNameText = tree.Element('text', x='50%', y='18%',  fill='black', 
+            toolNameText = tree.Element('text', x=self.convert('X', 0.5), y=self.convert('Y', 0.18),  fill='black', 
                 style='font-family:Arial;font-size:'+str(self.hugeFontSize)+'px;font-weight:bold;text-anchor:middle;')
             toolNameText.text = toolName[splitIndex+1:]
             self.dwg.append(toolNameText)
@@ -115,26 +116,26 @@ class Sticker:
     # Owner image, label, and name - If multiple owners prints first in list and a generic second line
     def addOwner(self, ownerName):
         if 'i3' in ownerName[0]:   # i3Detroit Logo for image
-            ownerImage = tree.Element('image', x='43%', y='25%', width='20%', height='30%',
-                href=os.path.join("Images", "Non-Equipment","i3_logo.png"))
+            ownerImage = tree.Element('image', x=self.convert('X', 0.43), y=self.convert('Y', 0.25), width=self.convert('X', 0.2), height=self.convert('Y', 0.3))
+            ownerImage.set("{http://www.w3.org/1999/xlink}href", os.path.join("Images", "Non-Equipment","i3_logo.png"))
         else:   # Generic image
-            ownerImage = tree.Element('image', x='43%', y='25%', width='20%', height='30%',
-                href=os.path.join("Images", "Non-Equipment", "OtherOwner_logo.png"))
+            ownerImage = tree.Element('image', x=self.convert('X', 0.43), y=self.convert('Y', 0.25), width=self.convert('X', 0.2), height=self.convert('Y', 0.3))
+            ownerImage.set("{http://www.w3.org/1999/xlink}href", os.path.join("Images", "Non-Equipment", "OtherOwner_logo.png"))
 
         self.dwg.append(ownerImage)
 
-        ownerText = tree.Element('text', x='53%', y='62%',  fill='black', 
+        ownerText = tree.Element('text', x=self.convert('X', 0.53), y=self.convert('Y', 0.62),  fill='black', 
             style='font-family:Arial;font-size:'+str(self.bigFontSize)+'px;font-weight:bold;text-anchor:middle;')
         ownerText.text = 'Owner:'
         self.dwg.append(ownerText)
 
-        ownerText = tree.Element('text', x='53%', y='69%',  fill='black', 
+        ownerText = tree.Element('text', x=self.convert('X', 0.53), y=self.convert('Y', 0.69),  fill='black', 
             style='font-family:Arial;font-size:'+str(self.mediumFontSize)+'px;text-anchor:middle;')
         ownerText.text = ownerName[0]
         self.dwg.append(ownerText)
 
         if len(ownerName) > 1:
-            ownerText = tree.Element('text', x='53%', y='76%',  fill='black', 
+            ownerText = tree.Element('text', x=self.convert('X', 0.53), y=self.convert('Y', 0.76),  fill='black', 
                 style='font-family:Arial;font-size:'+str(self.mediumFontSize)+'px;text-anchor:middle;')
             ownerText.text = 'and others'
             self.dwg.append(ownerText)
@@ -143,20 +144,30 @@ class Sticker:
     def addURL(self, url):
         if len(url) > 55:
             splitIndex = url.find('wiki/')+len('wiki/')
-            urlText = tree.Element('text', x='3%', y='90%',  fill='black', 
+            urlText = tree.Element('text', x=self.convert('X', 0.03), y=self.convert('Y', 0.9),  fill='black', 
                 style='font-family:Arial;font-size:'+str(self.mediumFontSize)+'px;text-anchor:left;')
             urlText.text = url[:splitIndex]
             self.dwg.append(urlText)
 
-            urlText = tree.Element('text', x='3%', y='96%',  fill='black', 
+            urlText = tree.Element('text', x=self.convert('X', 0.03), y=self.convert('Y', 0.96),  fill='black', 
                 style='font-family:Arial;font-size:'+str(self.mediumFontSize)+'px;text-anchor:left;')
             urlText.text = url[splitIndex:]
             self.dwg.append(urlText)
         else:
-            urlText = tree.Element('text', x='3%', y='93%',  fill='black', 
+            urlText = tree.Element('text', x=self.convert('X', 0.03), y=self.convert('Y', 0.93),  fill='black', 
                 style='font-family:Arial;font-size:'+str(self.mediumFontSize)+'px;text-anchor:left;')
             urlText.text = url
             self.dwg.append(urlText)
+
+    # Inkscape and other SVG editors don't like percentage-based locations and the XML builder module likes strings.  Values returned in pixels
+    def convert(self, axis, percent):
+        if percent > 100:
+            percent = percent/100
+
+        if axis.upper() == 'X':
+            return str(int(self.width*percent))
+        elif axis.upper() == 'Y':
+            return str(int(self.height*percent))
 
     # Generate the sticker SVG
     #TODO: Also create the PNG from this and delete the SVG, QR code images, etc.
@@ -167,7 +178,20 @@ class Sticker:
             fName = fName+'.svg'
 
         with open(fName, 'wb') as fptr:
-            fptr.write(tree.tostring(self.dwg))
+            fptr.write(tree.tostring(self.dwg, pretty_print=True))
+
+    def savePNG(self, pngName, keepSVG):
+        pngName = self.getSafeToolName(pngName)
+
+        if not pngName.endswith('.png'):
+            pngName = pngName+'.png'
+
+        svgName = pngName.replace('.png', '.svg')
+
+        os.system('inkscape %s -b white -e %s'%(svgName,pngName))
+
+        if not keepSVG:
+            os.remove(svgName)
 
     # Remove characters that aren't safe for file names before generating QR code images or final SVGs
     def getSafeToolName(self, toolName):
@@ -185,3 +209,10 @@ def getClosestChar(string, char, idx):
         return lowHalf
     else:
         return highHalf
+
+# Check if Inkscape is installed on the system - The CLI is used to convert SVG -> PNG
+# True if inkscape is present, False otherwise
+def checkInkscape():
+    result = os.system('inkscape --version')
+
+    return not bool(result)

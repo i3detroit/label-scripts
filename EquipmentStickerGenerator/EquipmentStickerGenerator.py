@@ -6,7 +6,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-j", "--json", help="Location of equipment data JSON file for parsing")
 parser.add_argument("-w", "--width", help="Sticker width (in pixels) - height is auto calculated to maintain 5:3 ratio")
 parser.add_argument("-b", "--border", action='store_true', help="Draw a border around the outside of the label" )
-parser.add_argument("-p", "--png", action='store_true', help='Store labels as PNG images (otherwise they will be SVGs)')
+parser.add_argument("-s", "--svg", action='store_true', help='Keep SVGs (if this flag is not set SVGs will be deleted after conversion to PNG)')
 
 args = parser.parse_args()
 
@@ -18,6 +18,10 @@ if args.border is True:
     drawBorder = True
 else:
     drawBorder = False
+
+if stickers.checkInkscape() is False:
+    print("Inkscape not installed!  Can't generate PNGs!")
+    sys.exit(1)
 
 equipDict = stickers.parseJSON(args.json)
 
@@ -44,9 +48,7 @@ for tool in equipDict:
         thisSticker = stickers.Sticker(drawBorder, toolName, toolOwner, toolURL, toolAuthRequired, toolZone, int(args.width))
     
     thisSticker.saveSVG(toolName)
-    
-    if args.png:
-        thisSticker.savePNG(toolName)
 
+    thisSticker.savePNG(toolName, args.svg)
 
 sys.exit(0)
