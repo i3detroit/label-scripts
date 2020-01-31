@@ -1,7 +1,7 @@
 from xml.etree import ElementTree as tree
-import qrcode, json
+import qrcode, json, os
 
-DEF_TOTAL_WIDTH = 500   # Width of the sticker (in pixels)
+DEF_TOTAL_WIDTH = 1000   # Width of the sticker (in pixels)
 DEF_TOTAL_HEIGHT = 3*DEF_TOTAL_WIDTH/5  # Height of sticker in pixels (5:3 ratio assumed)
 
 # A lot of metadata is included with the MediaWiki JSON export, we only care about the results of the query though
@@ -87,9 +87,10 @@ class Sticker:
         qrObject.add_data(url)
 
         img = qrObject.make_image()
-        img.save(fName+'.png')
+        #img.save(fName+'_QR.png')
+        img.save(os.path.join('Images', 'QR', fName+'_QR.png'))
         qrCode = tree.Element('image', x='2%', y='19%', width='40%', height='66%',
-                href=fName+'.png')
+                href=os.path.join('Images', 'QR', fName+'_QR.png'))
         self.dwg.append(qrCode)
 
     # Tool name in big print, bolded and centered
@@ -115,10 +116,10 @@ class Sticker:
     def addOwner(self, ownerName):
         if 'i3' in ownerName[0]:   # i3Detroit Logo for image
             ownerImage = tree.Element('image', x='43%', y='25%', width='20%', height='30%',
-                href="i3_logo.png")
+                href=os.path.join("Images", "Non-Equipment","i3_logo.png"))
         else:   # Generic image
             ownerImage = tree.Element('image', x='43%', y='25%', width='20%', height='30%',
-                href="OtherOwner_logo.png")
+                href=os.path.join("Images", "Non-Equipment", "OtherOwner_logo.png"))
 
         self.dwg.append(ownerImage)
 

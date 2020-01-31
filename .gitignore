@@ -1,2 +1,7 @@
 
 *.json
+*.svg
+*.png
+*.pyc
+
+!*/Images/Non-Equipment/*
